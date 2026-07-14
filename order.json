@@ -1,0 +1,6 @@
+{
+     "orders": [
+       { "id": 1, "customer": "Alice", "status": "placed", "timestamp": "2026-07-14T10:00:00Z" },
+       { "id": 2, "customer": "Bob", "status": "dispatched", "timestamp": "2026-07-14T11:00:00Z" }
+     ]
+   }
