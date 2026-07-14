@@ -1,6 +1,8 @@
 from flask import Flask, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 logistics_events = [
     {"order_id": 1, "domain": "logistics", "event_type": "in-transit", "timestamp": "2026-07-14T12:00:00Z"},

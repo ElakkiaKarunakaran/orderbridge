@@ -9,43 +9,49 @@
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
     th { background: #2c3e50; color: white; }
     tr:hover { background: #f1f1f1; }
-    .status { padding: 4px 10px; border-radius: 4px; color: white; font-size: 12px; }
-    .placed { background: #3498db; }
-    .dispatched { background: #e67e22; }
-    .delivered { background: #27ae60; }
+    .domain { padding: 4px 10px; border-radius: 4px; color: white; font-size: 12px; }
+    .order_capture { background: #3498db; }
+    .fulfilment { background: #e67e22; }
+    .logistics { background: #27ae60; }
   </style>
 </head>
 <body>
-  <h1>OrderBridge — Live Order Status</h1>
-  <table id="orderTable">
+  <h1>OrderBridge — Unified Order Events (3 Domains)</h1>
+  <table>
     <thead>
-      <tr><th>Order ID</th><th>Customer</th><th>Status</th><th>Timestamp</th></tr>
+      <tr><th>Order ID</th><th>Domain</th><th>Event</th><th>Timestamp</th></tr>
     </thead>
-    <tbody id="orderBody">
+    <tbody id="eventBody">
       <tr><td colspan="4">Loading...</td></tr>
     </tbody>
   </table>
 
   <script>
-    fetch('http://localhost:3000/orders')
-      .then(res => res.json())
-      .then(orders => {
-        const body = document.getElementById('orderBody');
-        body.innerHTML = '';
-        orders.forEach(o => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${o.id}</td>
-            <td>${o.customer}</td>
-            <td><span class="status ${o.status}">${o.status}</span></td>
-            <td>${o.timestamp}</td>
-          `;
-          body.appendChild(row);
-        });
-      })
-      .catch(err => {
-        document.getElementById('orderBody').innerHTML = '<tr><td colspan="4">Error loading orders — is json-server running?</td></tr>';
+    Promise.all([
+      fetch('http://localhost:3000/orders').then(r => r.json()),
+      fetch('http://localhost:4000/fulfilment').then(r => r.json()),
+      fetch('http://localhost:5000/logistics').then(r => r.json())
+    ]).then(([crm, fulfilment, logistics]) => {
+      const events = [
+        ...crm.map(o => ({order_id: o.id, domain: 'order_capture', event_type: o.status, timestamp: o.timestamp})),
+        ...fulfilment.map(f => ({order_id: f.order_id, domain: 'fulfilment', event_type: f.event_type, timestamp: f.timestamp})),
+        ...logistics.map(l => ({order_id: l.order_id, domain: 'logistics', event_type: l.event_type, timestamp: l.timestamp}))
+      ];
+      const body = document.getElementById('eventBody');
+      body.innerHTML = '';
+      events.forEach(e => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${e.order_id}</td>
+          <td><span class="domain ${e.domain}">${e.domain}</span></td>
+          <td>${e.event_type}</td>
+          <td>${e.timestamp}</td>
+        `;
+        body.appendChild(row);
       });
+    }).catch(err => {
+      document.getElementById('eventBody').innerHTML = '<tr><td colspan="4">Error — make sure all 3 mock servers are running (ports 3000, 4000, 5000)</td></tr>';
+    });
   </script>
 </body>
 </html>
