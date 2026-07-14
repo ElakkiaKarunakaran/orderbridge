@@ -1,20 +1,24 @@
 import requests
 import sqlite3
 
-# Connect to (or create) the database file
 conn = sqlite3.connect('orders.db')
-conn.execute('''CREATE TABLE IF NOT EXISTS orders 
-    (id INTEGER, customer TEXT, status TEXT, timestamp TEXT)''')
 
-# Pull data from the mock CRM
-response = requests.get('http://localhost:3000/orders')
-data = response.json()
+# Shared event schema table (matches proposal's normalized format)
+conn.execute('''CREATE TABLE IF NOT EXISTS order_events 
+    (order_id INTEGER, domain TEXT, event_type TEXT, timestamp TEXT)''')
 
-# Insert each order into the database
-for o in data:
-    conn.execute('INSERT INTO orders VALUES (?,?,?,?)', 
-        (o['id'], o['customer'], o['status'], o['timestamp']))
+# Domain 1: Order capture (CRM mock)
+crm_data = requests.get('http://localhost:3000/orders').json()
+for o in crm_data:
+    conn.execute('INSERT INTO order_events VALUES (?,?,?,?)',
+        (o['id'], 'order_capture', o['status'], o['timestamp']))
+
+# Domain 2: Fulfilment mock
+fulfilment_data = requests.get('http://localhost:4000/fulfilment').json()
+for f in fulfilment_data:
+    conn.execute('INSERT INTO order_events VALUES (?,?,?,?)',
+        (f['order_id'], f['domain'], f['event_type'], f['timestamp']))
 
 conn.commit()
 conn.close()
-print("Ingested", len(data), "orders into SQLite")
+print("Ingested", len(crm_data) + len(fulfilment_data), "events from 2 domains into shared schema")
