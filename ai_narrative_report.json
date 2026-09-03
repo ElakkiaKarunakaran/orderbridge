@@ -1,0 +1,5 @@
+{
+  "generated_at": "2026-09-03T22:54:00.700227",
+  "anomalies_detected": [],
+  "narrative": "Over the next 14 days, order demand is projected to increase across all modeled scenarios. Under our baseline forecast, daily volume is expected to rise steadily from 49 to 64 orders per day. Should a seasonal spike materialize, demand will range higher, expanding from 73 to 97 orders per day, while an extreme demand shock scenario projects a rapid escalation from 109 up to 147 orders per day. Notably, our IsolationForest model detected no anomalies during this period. Operationally, this absence of anomalous order behavior indicates that current purchasing patterns are stable and predictable, allowing us to rely confidently on our forecast trajectories without accounting for unexpected data distortions or system failures. To align operations with these projections, the fulfillment team should immediately adjust daily staffing and resource allocation to support the baseline trajectory scaling to 64 orders per day, while remaining prepared to flex capacity upward to meet the 97 orders per day threshold should order volume trend toward the seasonal spike scenario."
+}
